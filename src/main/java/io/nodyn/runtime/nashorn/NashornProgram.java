@@ -27,8 +27,8 @@ import javax.script.ScriptException;
  * @author lanceball
  */
 public class NashornProgram implements Program {
-    private final CompiledScript script;
-    private final String fileName;
+    private CompiledScript script;
+    private String fileName;
     
     public NashornProgram(CompiledScript script) {
         this(script, null);
@@ -47,9 +47,10 @@ public class NashornProgram implements Program {
                 return script.eval(ctx);
             } catch (ScriptException ex) {
                 Logger.getLogger(NashornProgram.class.getName()).log(Level.SEVERE, null, ex);
+                throw new RuntimeException("Failed to execute script [" + fileName + "]", ex);
             }
         }
-        throw new RuntimeException("Cannot execute with null context");
+        throw new RuntimeException("Cannot execute with null context [" + fileName + "]");
     }
 
 }
