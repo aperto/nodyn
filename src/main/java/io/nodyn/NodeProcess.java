@@ -101,7 +101,9 @@ public class NodeProcess extends EventSource {
     }
 
     public void doNextTick() {
-        this.tickCallback.run();
+        if (this.tickCallback != null) {
+            this.tickCallback.run();
+        }
     }
 
     public boolean getNeedImmediateCallback() {
