@@ -142,9 +142,14 @@ public class NashornRuntime extends Nodyn {
         getEventLoop().setProcess(javaProcess);
 
         try {
+            
             engine.eval("global = this;");
             engine.eval("load(\"nashorn:mozilla_compat.js\");");
 
+            for (String lib : this.getConfiguration().getDefaultLibraries()) {
+                engine.eval(String.format("load(\"%s\");", lib));
+            }
+            
             // Adds ES6 capabilities not provided by DynJS to global scope
             compileNative(ES6_POLYFILL).execute(global);
 

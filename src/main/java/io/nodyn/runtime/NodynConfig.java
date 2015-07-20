@@ -31,10 +31,12 @@ public class NodynConfig {
     private boolean noMoreArgs;
 
     private Map<String, Object> defaultBindings;
+    private List<String> defaultLibs;
     
     public NodynConfig() {
         this.classLoader = new NodynClassLoader();
         this.defaultBindings = new HashMap<>();
+        this.defaultLibs = new ArrayList<>();
     }
 
     public NodynConfig(String[] rawArgv) {
@@ -45,6 +47,24 @@ public class NodynConfig {
     @Override
     public String toString() {
         return "[NodynConfig: evalString=" + this.evalString + "; help=" + this.help + "; version=" + this.version + "; print=" + this.print + "; interactive=" + this.interactive + "; execArgv=" + this.execArgv + "]";
+    }
+    
+    /**
+     * Registers the supplied library so it will be loaded upon runtime initialization.
+     * 
+     * @param library   The library that will be loaded during runtime initialization. Neither <code>null</code> nor empty.
+     */
+    public void addDefaultLibrary(String library) {
+        this.defaultLibs.add(library);
+    }
+    
+    /**
+     * Returns a list of default libraries.
+     * 
+     * @return   A list of default libraries. Not <code>null</code>.
+     */
+    public List<String> getDefaultLibraries() {
+        return Collections.unmodifiableList(this.defaultLibs);
     }
     
     /**
