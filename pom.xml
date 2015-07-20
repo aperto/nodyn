@@ -188,6 +188,7 @@
   </dependencies>
 
   <profiles>
+    <!-- 
     <profile>
       <id>jasmine</id>
       <activation>
@@ -226,6 +227,7 @@
         </plugins>
       </build>
     </profile>
+    -->
     <profile>
       <id>buildhive</id>
       <build>
