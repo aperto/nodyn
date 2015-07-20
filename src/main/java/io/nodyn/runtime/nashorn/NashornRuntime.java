@@ -134,6 +134,9 @@ public class NashornRuntime extends Nodyn {
         bindings.put("__dirname", System.getProperty("user.dir"));
         bindings.put("__filename", Nodyn.NODE_JS);
         bindings.put("__nodyn", this);
+
+        // apply default bindings
+        this.getConfiguration().getDefaultBindings().forEach((key, value) -> bindings.putIfAbsent(key, value));
         
         NodeProcess javaProcess = new NodeProcess(this);
         getEventLoop().setProcess(javaProcess);

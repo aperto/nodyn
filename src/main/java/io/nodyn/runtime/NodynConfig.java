@@ -1,8 +1,10 @@
 package io.nodyn.runtime;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Bob McWhirter
@@ -28,8 +30,11 @@ public class NodynConfig {
 
     private boolean noMoreArgs;
 
+    private Map<String, Object> defaultBindings;
+    
     public NodynConfig() {
         this.classLoader = new NodynClassLoader();
+        this.defaultBindings = new HashMap<>();
     }
 
     public NodynConfig(String[] rawArgv) {
@@ -37,11 +42,30 @@ public class NodynConfig {
         parse( rawArgv );
     }
 
+    @Override
     public String toString() {
         return "[NodynConfig: evalString=" + this.evalString + "; help=" + this.help + "; version=" + this.version + "; print=" + this.print + "; interactive=" + this.interactive + "; execArgv=" + this.execArgv + "]";
-
+    }
+    
+    /**
+     * Adds the supplied default binding for the runtime in question.
+     * 
+     * @param key     The key to be used for the binding. Neither <code>null</code> nor empty.
+     * @param value   The bound object. Maybe <code>null</code>.
+     */
+    public void putDefaultBinding(String key, Object value) {
+        this.defaultBindings.put(key, value);
     }
 
+    /**
+     * Returns a map of bindings that will be used for the runtime.
+     * 
+     * @return   A map of bindings that will be used for the runtime. Not <code>null</code>.
+     */
+    public Map<String, Object> getDefaultBindings() {
+        return Collections.unmodifiableMap(defaultBindings);
+    }
+    
     public NodynClassLoader getClassLoader() {
         return this.classLoader;
     }
