@@ -83,8 +83,7 @@ module = (typeof module == 'undefined') ? {} :  module;
         return loadJSON(file);
       }
     } catch(ex) {
-      System.err.println(ex.stack);
-      throw new ModuleError("Cannot load module " + id, "LOAD_ERROR", ex);
+      throw new ModuleError("Cannot load module '" + id + "' (" + file + ")", "LOAD_ERROR", ex);
     }
   }
 
