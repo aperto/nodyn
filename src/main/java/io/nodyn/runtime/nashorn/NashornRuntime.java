@@ -21,11 +21,15 @@ import io.nodyn.runtime.NodynConfig;
 import io.nodyn.runtime.Program;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.script.Bindings;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.vertx.java.core.Vertx;
 
 import javax.script.ScriptContext;
@@ -42,6 +46,8 @@ import org.vertx.java.core.VertxFactory;
  */
 public class NashornRuntime extends Nodyn {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(NashornRuntime.class);
+    
     private final NashornScriptEngine engine;
     private final ScriptContext global;
     private Program nativeRequire;
@@ -63,7 +69,7 @@ public class NashornRuntime extends Nodyn {
             nativeRequire = compileNative(NATIVE_REQUIRE);
             nativeRequire.execute(global);
         } catch (ScriptException ex) {
-            Logger.getLogger(NashornRuntime.class.getName()).log(Level.SEVERE, "Failed to load " + NATIVE_REQUIRE, ex);
+            LOGGER.error("Failed to load " + NATIVE_REQUIRE, ex);
             System.exit(255);
         }
     }
@@ -86,7 +92,7 @@ public class NashornRuntime extends Nodyn {
             Program program = new NashornProgram(engine.compile(source), fileName);
             return program;
         } catch (ScriptException ex) {
-            Logger.getLogger(NashornRuntime.class.getName()).log(Level.SEVERE, "Cannot compile script " + fileName, ex);
+            LOGGER.error("Cannot compile script " + fileName, ex);
             handleThrowable(ex);
         }
         return null;
@@ -123,7 +129,7 @@ public class NashornRuntime extends Nodyn {
 
     @Override
     public void handleThrowable(Throwable t) {
-        System.err.println(t);
+        LOGGER.error(t.getLocalizedMessage(), t);
         t.printStackTrace();
     }
 
@@ -161,7 +167,7 @@ public class NashornRuntime extends Nodyn {
             JSObject nodeFunction = (JSObject) compileNative(NODE_JS).execute(global);
             nodeFunction.call(nodeFunction, jsProcess);
         } catch (ScriptException ex) {
-            Logger.getLogger(NashornRuntime.class.getName()).log(Level.SEVERE, "Cannot initialize", ex);
+            LOGGER.error("Cannot initialize", ex);
         }
         return javaProcess;
     }
@@ -171,7 +177,7 @@ public class NashornRuntime extends Nodyn {
         try {
             return engine.eval(new FileReader(script));
         } catch (ScriptException | FileNotFoundException ex) {
-            Logger.getLogger(NashornRuntime.class.getName()).log(Level.SEVERE, null, ex);
+            LOGGER.error(ex.getLocalizedMessage(), ex);
         }
         return null;
     }
@@ -182,8 +188,15 @@ public class NashornRuntime extends Nodyn {
     }
     
     private Program compileNative(String fileName) throws ScriptException  {
-        final InputStreamReader is = new InputStreamReader(getConfiguration().getClassLoader().getResourceAsStream(fileName));
-        return new NashornProgram(engine.compile(is), fileName);
+        URL resource = getConfiguration().getClassLoader().getResource(fileName);
+        if (resource == null) {
+            LOGGER.warn("Missing resource: " + resource);
+        }
+        try (InputStreamReader is = new InputStreamReader(resource.openStream())) {
+            return new NashornProgram(engine.compile(is), fileName);
+        } catch (IOException ex) {
+            throw new ScriptException(ex);
+        }
     }
 
     class NodynJSObject extends AbstractJSObject {
