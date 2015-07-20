@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>io.nodyn</groupId>
+  <groupId>com.aperto</groupId>
   <artifactId>nodyn</artifactId>
   <version>0.1.1-SNAPSHOT</version>
   <packaging>jar</packaging>
@@ -19,9 +19,10 @@
   </parent>
 
   <scm>
-    <connection>scm:git:git://github.com/nodyn/nodyn.git</connection>
-    <developerConnection>scm:git:ssh://git@github.com/nodyn/nodyn.git</developerConnection>
+    <connection>scm:git:git://github.com/aperto/nodyn.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com:aperto/nodyn.git</developerConnection>
     <url>http://github.com/nodyn.io</url>
+    <!-- branch: "aperto" -->
   </scm>
 
   <developers>
@@ -46,6 +47,19 @@
       <distribution>repo</distribution>
     </license>
   </licenses>
+
+  <distributionManagement>
+    <snapshotRepository>
+      <id>aperto.nexus.snapshots</id>
+      <name>Aperto 3rd party snapshots</name>
+      <url>https://maven.aperto.de/nexus/content/repositories/thirdparty.snapshots/</url>
+    </snapshotRepository>
+    <repository>
+      <id>aperto.nexus.releases</id>
+      <name>Aperto 3rd party</name>
+      <url>https://maven.aperto.de/nexus/content/repositories/thirdparty/</url>
+    </repository>
+  </distributionManagement>
 
   <properties>
     <node.version>0.12.0</node.version>
