@@ -1,5 +1,7 @@
 package io.nodyn.runtime;
 
+import javax.script.ScriptEngine;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -33,6 +35,12 @@ public class NodynConfig {
     private Map<String, Object> defaultBindings;
     private List<String> defaultLibs;
     
+    // if provided the supplied instance will be configured, otherwise a new instance will be created
+    private ScriptEngine scriptEngine = null;
+    
+    // enables/disables the support for the eventloop/process
+    private boolean processEnabled = true;
+    
     public NodynConfig() {
         this.classLoader = new NodynClassLoader();
         this.defaultBindings = new HashMap<>();
@@ -44,6 +52,22 @@ public class NodynConfig {
         parse( rawArgv );
     }
 
+    public void setProcessEnabled(boolean enable) {
+        this.processEnabled = enable;
+    }
+    
+    public boolean isProcessEnabled() {
+        return this.processEnabled;
+    }
+    
+    public void setScriptEngine(ScriptEngine engine) {
+        this.scriptEngine = engine;
+    }
+    
+    public ScriptEngine getScriptEngine() {
+        return this.scriptEngine;
+    }
+    
     @Override
     public String toString() {
         return "[NodynConfig: evalString=" + this.evalString + "; help=" + this.help + "; version=" + this.version + "; print=" + this.print + "; interactive=" + this.interactive + "; execArgv=" + this.execArgv + "]";

@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import org.vertx.java.core.Vertx;
 
 import javax.script.ScriptContext;
+import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.script.SimpleScriptContext;
@@ -48,8 +49,8 @@ public class NashornRuntime extends Nodyn {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NashornRuntime.class);
     
-    private final NashornScriptEngine engine;
-    private final ScriptContext global;
+    private NashornScriptEngine engine;
+    private ScriptContext global;
     private Program nativeRequire;
     
     private static final String NATIVE_REQUIRE = "nodyn/_native_require.js";
@@ -58,11 +59,21 @@ public class NashornRuntime extends Nodyn {
         this(config, VertxFactory.newVertx(), true);
     }
 
-
     public NashornRuntime(NodynConfig config, Vertx vertx, boolean controlLifeCycle) {
         super(config, vertx, controlLifeCycle);
         Thread.currentThread().setContextClassLoader(getConfiguration().getClassLoader());
-        engine = (NashornScriptEngine) new ScriptEngineManager().getEngineByName("nashorn");
+        if (config.getScriptEngine() != null) {
+            ScriptEngine scriptEngine = config.getScriptEngine();
+            if (scriptEngine instanceof NashornScriptEngine) {
+                engine = (NashornScriptEngine) scriptEngine;
+            } else {
+                LOGGER.warn(String.format("Cannot use ScriptEngine '%s' as '%s' is required", 
+                    scriptEngine.getClass().getName(), NashornScriptEngine.class.getName()));
+            }
+        }
+        if (engine == null) {
+            engine = (NashornScriptEngine) new ScriptEngineManager().getEngineByName("nashorn");
+        }
         global = engine.getContext();
 
         try {
@@ -135,6 +146,7 @@ public class NashornRuntime extends Nodyn {
 
     @Override
     protected NodeProcess initialize() {
+        
         Bindings bindings = engine.getBindings(ScriptContext.GLOBAL_SCOPE);
         bindings.put("__vertx", getVertx());
         bindings.put("__dirname", System.getProperty("user.dir"));
@@ -144,8 +156,20 @@ public class NashornRuntime extends Nodyn {
         // apply default bindings
         this.getConfiguration().getDefaultBindings().forEach((key, value) -> bindings.putIfAbsent(key, value));
         
-        NodeProcess javaProcess = new NodeProcess(this);
-        getEventLoop().setProcess(javaProcess);
+        if (this.getConfiguration().isProcessEnabled()) {
+            return initializeWithProcess();
+        } else {
+            return initializeWithProcess();
+        }
+        
+    }
+    
+    private NodeProcess initializeWithProcess() {
+        NodeProcess result = null;
+        
+        result = new NodeProcess(this);
+        
+        getEventLoop().setProcess(result);
 
         try {
             
@@ -161,7 +185,7 @@ public class NashornRuntime extends Nodyn {
 
             // Invoke the process function
             JSObject processFunction = (JSObject) compileNative(PROCESS).execute(global);
-            JSObject jsProcess = (JSObject) processFunction.call(processFunction, javaProcess);
+            JSObject jsProcess = (JSObject) processFunction.call(processFunction, result);
 
             // Invoke the node function
             JSObject nodeFunction = (JSObject) compileNative(NODE_JS).execute(global);
@@ -169,9 +193,10 @@ public class NashornRuntime extends Nodyn {
         } catch (ScriptException ex) {
             LOGGER.error("Cannot initialize", ex);
         }
-        return javaProcess;
+        return result;
+        
     }
-
+    
     @Override
     protected Object runScript(String script) {
         try {
