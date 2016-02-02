@@ -16,6 +16,9 @@
 
 package io.nodyn;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,16 +27,18 @@ import java.util.Map;
  */
 public class EventSource {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(EventSource.class);
+
     private Map<String, Callback> callbacks = new HashMap<>();
-
-    public EventSource() {
-
-    }
 
     public Object emit(String event, CallbackResult result) {
         Callback callback = this.callbacks.get(event);
         if (callback != null) {
-            return callback.call(result);
+            try {
+                return callback.call(result);
+            } catch (Exception ex) {
+                LOGGER.error("event: " + event + " , result:" + result + ", callback: " + callback, ex);
+            }
         }
         return null;
     }
