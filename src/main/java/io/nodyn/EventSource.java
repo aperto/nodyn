@@ -16,9 +16,7 @@
 
 package io.nodyn;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,8 +24,6 @@ import java.util.Map;
  * @author Bob McWhirter
  */
 public class EventSource {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(EventSource.class);
 
     private Map<String, Callback> callbacks = new HashMap<>();
 
@@ -37,12 +33,26 @@ public class EventSource {
         if (callback != null) {
             try {
                 res = callback.call(result);
-                LOGGER.info("RESULT: " + res + " {" + event + ", " + callback + "}");
             } catch (Exception ex) {
-                LOGGER.error("event: " + event + " , result:" + result + ", callback: " + callback, ex);
+                if (result.getResult() instanceof ByteBuffer) {
+                    hack((ByteBuffer) result.getResult());
+                }
             }
         }
         return res;
+    }
+
+    // TODO: the SIGINT obviously does NOT reach the JVM, so we need to invoke it here, otherwise there won't be
+    //       a proper shutdown
+    private void hack(ByteBuffer buffer) {
+        byte[] array = buffer.array();
+        for (byte b : array) {
+            if (b == 3) {
+                // 3 = ETX (end of text) = CTRL-C
+                System.exit(0);
+            }
+
+        }
     }
 
     public void on(String event, Callback callback) {
