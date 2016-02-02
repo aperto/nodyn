@@ -32,15 +32,17 @@ public class EventSource {
     private Map<String, Callback> callbacks = new HashMap<>();
 
     public Object emit(String event, CallbackResult result) {
+        Object res = null;
         Callback callback = this.callbacks.get(event);
         if (callback != null) {
             try {
-                return callback.call(result);
+                res = callback.call(result);
+                LOGGER.info("RESULT: " + res + " {" + event + ", " + callback + "}");
             } catch (Exception ex) {
                 LOGGER.error("event: " + event + " , result:" + result + ", callback: " + callback, ex);
             }
         }
-        return null;
+        return res;
     }
 
     public void on(String event, Callback callback) {

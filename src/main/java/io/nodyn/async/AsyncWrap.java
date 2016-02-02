@@ -45,6 +45,7 @@ public class AsyncWrap extends EventSource {
 
     }
 
+    @Override
     public Object emit(final String event, final CallbackResult result) {
         this.process.getEventLoop().submitUserTask( new Runnable() {
             @Override
