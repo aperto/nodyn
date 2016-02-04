@@ -138,7 +138,10 @@ public class EventLoop implements RefCounted {
         System.err.println(" ---- ");
         System.err.println(this.handles);
         System.err.println(" ---- ");
+    }
 
+    public boolean hasHandlesToProcess() {
+        return !this.handles.isEmpty();
     }
 
     @Override
