@@ -61,6 +61,9 @@ public class EventLoop implements RefCounted {
             latch.await();
         } catch (InterruptedException e) {
             EventLoop.this.process.getNodyn().handleThrowable(e);
+            System.err.println("### ~~~~~~~~~~~~~~~~~~~ ###");
+            System.err.println("### latch interrupted   ###");
+            System.err.println("### ~~~~~~~~~~~~~~~~~~~ ###");
             this.eventLoopGroup = null;
         }
 
@@ -155,6 +158,9 @@ public class EventLoop implements RefCounted {
         --this.counter;
         this.handles.remove(handle);
         if (this.counter == 0) {
+            System.err.println("### ~~~~~~~~~~~~~~~~~~~ ###");
+            System.err.println("### ref count reached 0 ###");
+            System.err.println("### ~~~~~~~~~~~~~~~~~~~ ###");
             doShutdown();
         }
     }

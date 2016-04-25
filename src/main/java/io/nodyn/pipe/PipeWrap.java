@@ -2,8 +2,10 @@ package io.nodyn.pipe;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
 import io.nodyn.NodeProcess;
 import io.nodyn.fs.UnsafeFs;
+import io.nodyn.loop.EventLoop;
 import io.nodyn.netty.DataEventHandler;
 import io.nodyn.netty.EOFEventHandler;
 import io.nodyn.netty.pipe.NioDuplexStreamChannel;
@@ -119,7 +121,9 @@ public class PipeWrap extends StreamWrap {
         nioChannel.config().setAutoRead(false);
         this.channelFuture = nioChannel.newSucceededFuture();
         //nioChannel.pipeline().addLast("debug", new DebugHandler("output:" + fd + " // " + process.getPosix().getpid()));
-        process.getEventLoop().getEventLoopGroup().register(nioChannel);
+        EventLoop eventLoop = process.getEventLoop(); 
+        EventLoopGroup eventLoopGroup = eventLoop.getEventLoopGroup();
+        eventLoopGroup.register(nioChannel);
 
         this.type = Type.OUTPUT;
     }
