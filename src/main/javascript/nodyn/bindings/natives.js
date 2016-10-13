@@ -1,3 +1,4 @@
+//@ sourceURL=src/main/javascript/nodyn/bindings/natives.js
 /*
  * Copyright 2014 Red Hat, Inc.
  *

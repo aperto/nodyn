@@ -1,3 +1,4 @@
+//@ sourceURL=src/main/javascript/nodyn/bindings/fs.js
 /*
  * Copyright 2014 Red Hat, Inc.
  *
