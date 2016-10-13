@@ -48,11 +48,11 @@ import org.vertx.java.core.VertxFactory;
 public class NashornRuntime extends Nodyn {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(NashornRuntime.class);
-    
+
     private NashornScriptEngine engine;
     private ScriptContext global;
     private Program nativeRequire;
-    
+
     private static final String NATIVE_REQUIRE = "nodyn/_native_require.js";
 
     public NashornRuntime(NodynConfig config) {
@@ -67,7 +67,7 @@ public class NashornRuntime extends Nodyn {
             if (scriptEngine instanceof NashornScriptEngine) {
                 engine = (NashornScriptEngine) scriptEngine;
             } else {
-                LOGGER.warn(String.format("Cannot use ScriptEngine '%s' as '%s' is required", 
+                LOGGER.warn(String.format("Cannot use ScriptEngine '%s' as '%s' is required",
                     scriptEngine.getClass().getName(), NashornScriptEngine.class.getName()));
             }
         }
@@ -144,9 +144,17 @@ public class NashornRuntime extends Nodyn {
         t.printStackTrace();
     }
 
+    /**
+     * Initialize on current thread, i.e. outside of the Nodyn event loop that otherwise does
+     * initialization asynchronously in a different thread.
+     */
+    public void synchronousInitialize() {
+        initialize();
+    }
+
     @Override
     protected NodeProcess initialize() {
-        
+
         Bindings bindings = engine.getBindings(ScriptContext.GLOBAL_SCOPE);
         bindings.put("__vertx", getVertx());
         bindings.put("__dirname", System.getProperty("user.dir"));
@@ -155,31 +163,31 @@ public class NashornRuntime extends Nodyn {
 
         // apply default bindings
         this.getConfiguration().getDefaultBindings().forEach((key, value) -> bindings.putIfAbsent(key, value));
-        
+
         if (this.getConfiguration().isProcessEnabled()) {
             return initializeWithProcess();
         } else {
             return initializeWithProcess();
         }
-        
+
     }
-    
+
     private NodeProcess initializeWithProcess() {
         NodeProcess result = null;
-        
+
         result = new NodeProcess(this);
-        
+
         getEventLoop().setProcess(result);
 
         try {
-            
+
             engine.eval("global = this;");
             engine.eval("load(\"nashorn:mozilla_compat.js\");");
 
             for (String lib : this.getConfiguration().getDefaultLibraries()) {
                 engine.eval(String.format("load(\"%s\");", lib));
             }
-            
+
             // Adds ES6 capabilities not provided by DynJS to global scope
             compileNative(ES6_POLYFILL).execute(global);
 
@@ -194,9 +202,9 @@ public class NashornRuntime extends Nodyn {
             LOGGER.error("Cannot initialize", ex);
         }
         return result;
-        
+
     }
-    
+
     @Override
     protected Object runScript(String script) {
         try {
@@ -211,7 +219,7 @@ public class NashornRuntime extends Nodyn {
     public Object getGlobalContext() {
         return global;
     }
-    
+
     private Program compileNative(String fileName) throws ScriptException  {
         URL resource = getConfiguration().getClassLoader().getResource(fileName);
         if (resource == null) {
