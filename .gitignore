@@ -10,3 +10,4 @@ target/
 dynjs-linker.log
 nodyn.log
 nodyn-standalone/bin/*
+/.tern-project
