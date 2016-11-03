@@ -15,32 +15,32 @@
  */
 package io.nodyn.runtime.nashorn;
 
-import io.nodyn.NodeProcess;
-import io.nodyn.Nodyn;
-import io.nodyn.runtime.NodynConfig;
-import io.nodyn.runtime.Program;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.logging.Level;
-import javax.script.Bindings;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.vertx.java.core.Vertx;
+import org.vertx.java.core.VertxFactory;
 
+import javax.script.Bindings;
 import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 import javax.script.SimpleScriptContext;
+
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map.Entry;
+
+import io.nodyn.NodeProcess;
+import io.nodyn.Nodyn;
+import io.nodyn.runtime.NodynConfig;
+import io.nodyn.runtime.Program;
 import jdk.nashorn.api.scripting.AbstractJSObject;
 import jdk.nashorn.api.scripting.JSObject;
 import jdk.nashorn.api.scripting.NashornScriptEngine;
-import org.vertx.java.core.VertxFactory;
+import jdk.nashorn.api.scripting.ScriptObjectMirror;
 
 /**
  * @author Lance Ball
@@ -51,9 +51,13 @@ public class NashornRuntime extends Nodyn {
 
     private NashornScriptEngine engine;
     private ScriptContext global;
-    private Program nativeRequire;
 
     private static final String NATIVE_REQUIRE = "nodyn/_native_require.js";
+
+    public static String exceptionDetails(Throwable t) {
+        String result = t.toString() + ", top stackframe: " + t.getStackTrace()[0];
+        return result;
+    }
 
     public NashornRuntime(NodynConfig config) {
         this(config, VertxFactory.newVertx(), true);
@@ -77,11 +81,10 @@ public class NashornRuntime extends Nodyn {
         global = engine.getContext();
 
         try {
-            nativeRequire = compileNative(NATIVE_REQUIRE);
-            nativeRequire.execute(global);
+            engineLoadScript(NATIVE_REQUIRE);
         } catch (ScriptException ex) {
             LOGGER.error("Failed to load " + NATIVE_REQUIRE, ex);
-            System.exit(255);
+            throw new RuntimeException(ex);
         }
     }
 
@@ -90,10 +93,10 @@ public class NashornRuntime extends Nodyn {
         try {
             String pathName = "nodyn/bindings/" + name + ".js";
             return engine.eval("_native_require('" + pathName + "');", global);
-        } catch (ScriptException e) {
-            this.handleThrowable(e);
+        } catch (Throwable t) {
+            throw new RuntimeException(t);
         }
-        return false;
+        //return false;
     }
 
     @Override
@@ -189,20 +192,37 @@ public class NashornRuntime extends Nodyn {
             }
 
             // Adds ES6 capabilities not provided by DynJS to global scope
-            compileNative(ES6_POLYFILL).execute(global);
+            engineLoadScript(ES6_POLYFILL);
 
             // Invoke the process function
-            JSObject processFunction = (JSObject) compileNative(PROCESS).execute(global);
-            JSObject jsProcess = (JSObject) processFunction.call(processFunction, result);
+            ScriptObjectMirror processJsFunction = engineLoadScript(PROCESS);
+            Object jsProcess = processJsFunction.call(processJsFunction, result);
 
             // Invoke the node function
-            JSObject nodeFunction = (JSObject) compileNative(NODE_JS).execute(global);
-            nodeFunction.call(nodeFunction, jsProcess);
+            ScriptObjectMirror nodeJsFunction = engineLoadScript(NODE_JS);
+            nodeJsFunction.call(nodeJsFunction, jsProcess);
         } catch (ScriptException ex) {
             LOGGER.error("Cannot initialize", ex);
         }
         return result;
 
+    }
+
+    /**
+     * Uses Nashorn extension "load()" to load and execute a JS script from a file or URL.
+     * This will make it available for debugging in IDEs.
+     * See also "load function" in https://wiki.openjdk.java.net/display/Nashorn/Nashorn+extensions#Nashornextensions-Extensionproperties,functionsinglobalobject
+     * and http://davidbuccola.blogspot.de/2015/02/debugging-nashorn-javascript-with.html
+     */
+    private ScriptObjectMirror engineLoadScript(String pathOrUrl) throws ScriptException {
+        String resource = pathOrUrl;
+        if (!pathOrUrl.contains(":")) {
+            // likely a classpath relative path, turn into proper URL
+            URL result = Thread.currentThread().getContextClassLoader().getResource(pathOrUrl);
+            resource = result.toString();
+        }
+        ScriptObjectMirror eval = (ScriptObjectMirror) engine.eval("load('" + resource + "')");
+        return eval;
     }
 
     @Override
@@ -220,17 +240,6 @@ public class NashornRuntime extends Nodyn {
         return global;
     }
 
-    private Program compileNative(String fileName) throws ScriptException  {
-        URL resource = getConfiguration().getClassLoader().getResource(fileName);
-        if (resource == null) {
-            LOGGER.warn("Missing resource: " + resource);
-        }
-        try (InputStreamReader is = new InputStreamReader(resource.openStream())) {
-            return new NashornProgram(engine.compile(is), fileName);
-        } catch (IOException ex) {
-            throw new ScriptException(ex);
-        }
-    }
 
     class NodynJSObject extends AbstractJSObject {
 
@@ -251,4 +260,5 @@ public class NashornRuntime extends Nodyn {
             return store.get(name);
         }
     }
+
 }
