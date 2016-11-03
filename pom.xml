@@ -266,13 +266,17 @@
     <resources>
       <resource>
         <directory>node/lib</directory>
+        <!-- see prependJsSourceUrl in maven-resources-plugin configuration !-->
+        <filtering>true</filtering>
       </resource>
       <resource>
         <directory>node/src</directory>
         <includes><include>node.js</include></includes>
+        <filtering>true</filtering>
       </resource>
       <resource>
         <directory>src/main/javascript</directory>
+        <filtering>true</filtering>
       </resource>
       <resource>
         <directory>src/main/resources</directory>
@@ -425,6 +429,23 @@
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>3.0.1</version>
+	    <configuration>
+	      <mavenFilteringHints>
+	        <mavenFilteringHint>prependJsSourceUrl</mavenFilteringHint>
+	      </mavenFilteringHints>
+	     </configuration>
+        <dependencies>
+          <dependency>
+		    <groupId>com.aperto</groupId>
+		    <artifactId>sourceurl-resourcefilter</artifactId>
+		    <version>0.0.1-SNAPSHOT</version>
+          </dependency>
+        </dependencies>
       </plugin>
     </plugins>
   </build>
