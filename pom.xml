@@ -434,11 +434,6 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-resources-plugin</artifactId>
         <version>3.0.1</version>
-	    <configuration>
-	      <mavenFilteringHints>
-	        <mavenFilteringHint>prependJsSourceUrl</mavenFilteringHint>
-	      </mavenFilteringHints>
-	     </configuration>
         <dependencies>
           <dependency>
 		    <groupId>com.aperto</groupId>
