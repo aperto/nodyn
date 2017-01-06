@@ -101,4 +101,15 @@ Pipe.prototype.writeUtf8String = function(req,data,handle) {
   this._pipe.writeUtf8String(data, handle._fd);
 };
 
+Pipe.prototype.setBlocking = function(isBlocking) {
+	// this is called only on windows, see 
+	// https://github.com/nodejs/node/commit/20176a98416353d4596900793f739d5ebf4f0ee1
+	// related pull-request is https://github.com/nodejs/node/pull/3584
+	// changes are supposed to implement "major browser console doc",
+	// but there is no mention of blocking I/O in those docs!
+	// so just ignore the call ...
+	return 0;
+};
+
+
 module.exports.Pipe = Pipe;
