@@ -91,7 +91,7 @@
     <version.apacheds>1.5.7</version.apacheds>
     <version.commons.lang>3.1</version.commons.lang>
     <version.bouncycastle>1.50</version.bouncycastle>
-    <version.jnr-posix>3.0.3</version.jnr-posix>
+    <version.jnr-posix>3.0.34-SNAPSHOT</version.jnr-posix>
 
     <test.pattern>**/*Spec.js</test.pattern>
   </properties>
@@ -159,7 +159,7 @@
       <version>${version.bouncycastle}</version>
     </dependency>
     <dependency>
-      <groupId>com.github.jnr</groupId>
+      <groupId>com.aperto.jnr</groupId>
       <artifactId>jnr-posix</artifactId>
       <version>${version.jnr-posix}</version>
     </dependency>
@@ -393,43 +393,43 @@
           </execution>
         </executions>
       </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>exec-maven-plugin</artifactId>
-        <version>1.2.1</version>
-        <executions>
-          <execution>
-            <id>generate-executable</id>
-            <phase>package</phase>
-            <goals>
-              <goal>exec</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <executable>src/main/assembly/genexe.sh</executable>
-        </configuration>
-      </plugin>
-      <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <version>${maven.assembly.plugin.version}</version>
-        <executions>
-          <execution>
-            <id>assemble-dist-bin</id>
-            <phase>package</phase>
-            <goals>
-              <goal>single</goal>
-            </goals>
-            <configuration>
-              <attach>true</attach>
-              <descriptors>
-                <descriptor>src/main/assembly/dist-bin.xml</descriptor>
-              </descriptors>
-              <attach>true</attach>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
+<!--       <plugin> -->
+<!--         <groupId>org.codehaus.mojo</groupId> -->
+<!--         <artifactId>exec-maven-plugin</artifactId> -->
+<!--         <version>1.2.1</version> -->
+<!--         <executions> -->
+<!--           <execution> -->
+<!--             <id>generate-executable</id> -->
+<!--             <phase>package</phase> -->
+<!--             <goals> -->
+<!--               <goal>exec</goal> -->
+<!--             </goals> -->
+<!--           </execution> -->
+<!--         </executions> -->
+<!--         <configuration> -->
+<!--           <executable>src/main/assembly/genexe.sh</executable> -->
+<!--         </configuration> -->
+<!--       </plugin> -->
+<!--       <plugin> -->
+<!--         <artifactId>maven-assembly-plugin</artifactId> -->
+<!--         <version>${maven.assembly.plugin.version}</version> -->
+<!--         <executions> -->
+<!--           <execution> -->
+<!--             <id>assemble-dist-bin</id> -->
+<!--             <phase>package</phase> -->
+<!--             <goals> -->
+<!--               <goal>single</goal> -->
+<!--             </goals> -->
+<!--             <configuration> -->
+<!--               <attach>true</attach> -->
+<!--               <descriptors> -->
+<!--                 <descriptor>src/main/assembly/dist-bin.xml</descriptor> -->
+<!--               </descriptors> -->
+<!--               <attach>true</attach> -->
+<!--             </configuration> -->
+<!--           </execution> -->
+<!--         </executions> -->
+<!--       </plugin> -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-resources-plugin</artifactId>
