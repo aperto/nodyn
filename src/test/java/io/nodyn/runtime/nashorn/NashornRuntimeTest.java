@@ -15,21 +15,24 @@
  */
 package io.nodyn.runtime.nashorn;
 
-import io.nodyn.NodeProcess;
-import io.nodyn.runtime.NodynConfig;
-import io.nodyn.runtime.Program;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+
+import java.io.File;
+import java.io.FileWriter;
+
+import org.apache.commons.lang.StringUtils;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 import org.vertx.java.core.Vertx;
 import org.vertx.java.core.VertxFactory;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import io.nodyn.NodeProcess;
+import io.nodyn.runtime.NodynConfig;
+import io.nodyn.runtime.Program;
 
 /**
  *
@@ -102,7 +105,8 @@ public class NashornRuntimeTest {
         fileWriter.write(testString);
         fileWriter.close();
 
-        Program p = instance.compile("require('fs').readFileSync('" + tempFile.getAbsolutePath() + "' , {encoding: 'UTF-8'})", "testReadSync", true);
+        String absolutePath = StringUtils.replace(tempFile.getAbsolutePath(), "\\", "\\\\");
+        Program p = instance.compile("require('fs').readFileSync('" + absolutePath + "' , {encoding: 'UTF-8'})", "testReadSync", true);
         Object fileContent = p.execute(instance.getGlobalContext());
         assertEquals(testString, fileContent);
     }
