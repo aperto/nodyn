@@ -184,6 +184,12 @@
       <groupId>org.dynjs</groupId>
       <artifactId>dynjs</artifactId>
       <version>${version.dynjs}</version>
+      <exclusions>
+      	<exclusion>
+      		<groupId>com.github.jnr</groupId>
+      		<artifactId>jnr-posix</artifactId>
+      	</exclusion>
+      </exclusions>
     </dependency>
   </dependencies>
 
