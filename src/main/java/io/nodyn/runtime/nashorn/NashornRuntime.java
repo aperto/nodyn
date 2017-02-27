@@ -31,7 +31,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.net.URL;
 import java.util.HashMap;
-import java.util.Map.Entry;
 
 import io.nodyn.NodeProcess;
 import io.nodyn.Nodyn;
@@ -50,6 +49,10 @@ public class NashornRuntime extends Nodyn {
     private static final Logger LOGGER = LoggerFactory.getLogger(NashornRuntime.class);
 
     private NashornScriptEngine engine;
+
+    /**
+     * Either the ScriptContext given in NodynConfig.getScriptContext(), or, if none was given, the engine's default ScriptContext.
+     */
     private ScriptContext global;
 
     private static final String NATIVE_REQUIRE = "nodyn/_native_require.js";
@@ -78,7 +81,12 @@ public class NashornRuntime extends Nodyn {
         if (engine == null) {
             engine = (NashornScriptEngine) new ScriptEngineManager().getEngineByName("nashorn");
         }
-        global = engine.getContext();
+
+        if (config.getScriptContext()!=null) {
+            global = config.getScriptContext();
+        } else {
+            global = engine.getContext();
+        }
 
         try {
             engineLoadScript(NATIVE_REQUIRE);
@@ -103,7 +111,7 @@ public class NashornRuntime extends Nodyn {
     public Program compile(String source, String fileName, boolean displayErrors) throws Throwable {
         // TODO: do something with the displayErrors parameter
         try {
-            Program program = new NashornProgram(engine.compile(source), fileName);
+            Program program = new NashornProgram( engine.compile(source), fileName);
             return program;
         } catch (ScriptException ex) {
             LOGGER.error("Cannot compile script " + fileName, ex);
@@ -158,7 +166,7 @@ public class NashornRuntime extends Nodyn {
     @Override
     protected NodeProcess initialize() {
 
-        Bindings bindings = engine.getBindings(ScriptContext.GLOBAL_SCOPE);
+        Bindings bindings = global.getBindings(ScriptContext.ENGINE_SCOPE);
         bindings.put("__vertx", getVertx());
         bindings.put("__dirname", System.getProperty("user.dir"));
         bindings.put("__filename", Nodyn.NODE_JS);
@@ -184,11 +192,11 @@ public class NashornRuntime extends Nodyn {
 
         try {
 
-            engine.eval("global = this;");
-            engine.eval("load(\"nashorn:mozilla_compat.js\");");
+            engine.eval("global = this;", global);
+            engine.eval("load(\"nashorn:mozilla_compat.js\");", global);
 
             for (String lib : this.getConfiguration().getDefaultLibraries()) {
-                engine.eval(String.format("load(\"%s\");", lib));
+                engine.eval(String.format("load(\"%s\");", lib), global);
             }
 
             // Adds ES6 capabilities not provided by DynJS to global scope
@@ -221,14 +229,14 @@ public class NashornRuntime extends Nodyn {
             URL result = Thread.currentThread().getContextClassLoader().getResource(pathOrUrl);
             resource = result.toString();
         }
-        ScriptObjectMirror eval = (ScriptObjectMirror) engine.eval("load('" + resource + "')");
+        ScriptObjectMirror eval = (ScriptObjectMirror) engine.eval("load('" + resource + "')", global);
         return eval;
     }
 
     @Override
     protected Object runScript(String script) {
         try {
-            return engine.eval(new FileReader(script));
+            return engine.eval(new FileReader(script), global);
         } catch (ScriptException | FileNotFoundException ex) {
             LOGGER.error(ex.getLocalizedMessage(), ex);
         }

@@ -1,6 +1,7 @@
 package io.nodyn.runtime;
 
 import javax.script.ScriptEngine;
+import javax.script.ScriptContext;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -34,13 +35,18 @@ public class NodynConfig {
 
     private Map<String, Object> defaultBindings;
     private List<String> defaultLibs;
-    
+
     // if provided the supplied instance will be configured, otherwise a new instance will be created
     private ScriptEngine scriptEngine = null;
-    
+
+    /**
+     * The ScriptContext to always use.
+     */
+    private ScriptContext scriptContext;
+
     // enables/disables the support for the eventloop/process
     private boolean processEnabled = true;
-    
+
     public NodynConfig() {
         this.classLoader = new NodynClassLoader();
         this.defaultBindings = new HashMap<>();
@@ -55,45 +61,54 @@ public class NodynConfig {
     public void setProcessEnabled(boolean enable) {
         this.processEnabled = enable;
     }
-    
+
     public boolean isProcessEnabled() {
         return this.processEnabled;
     }
-    
+
     public void setScriptEngine(ScriptEngine engine) {
         this.scriptEngine = engine;
     }
-    
+
+    public void setScriptContext(ScriptContext scriptContext) {
+        this.scriptContext = scriptContext;
+    }
+
+    public ScriptContext getScriptContext() {
+        return this.scriptContext;
+    }
+
+
     public ScriptEngine getScriptEngine() {
         return this.scriptEngine;
     }
-    
+
     @Override
     public String toString() {
         return "[NodynConfig: evalString=" + this.evalString + "; help=" + this.help + "; version=" + this.version + "; print=" + this.print + "; interactive=" + this.interactive + "; execArgv=" + this.execArgv + "]";
     }
-    
+
     /**
      * Registers the supplied library so it will be loaded upon runtime initialization.
-     * 
+     *
      * @param library   The library that will be loaded during runtime initialization. Neither <code>null</code> nor empty.
      */
     public void addDefaultLibrary(String library) {
         this.defaultLibs.add(library);
     }
-    
+
     /**
      * Returns a list of default libraries.
-     * 
+     *
      * @return   A list of default libraries. Not <code>null</code>.
      */
     public List<String> getDefaultLibraries() {
         return Collections.unmodifiableList(this.defaultLibs);
     }
-    
+
     /**
      * Adds the supplied default binding for the runtime in question.
-     * 
+     *
      * @param key     The key to be used for the binding. Neither <code>null</code> nor empty.
      * @param value   The bound object. Maybe <code>null</code>.
      */
@@ -103,13 +118,13 @@ public class NodynConfig {
 
     /**
      * Returns a map of bindings that will be used for the runtime.
-     * 
+     *
      * @return   A map of bindings that will be used for the runtime. Not <code>null</code>.
      */
     public Map<String, Object> getDefaultBindings() {
         return Collections.unmodifiableMap(defaultBindings);
     }
-    
+
     public NodynClassLoader getClassLoader() {
         return this.classLoader;
     }
