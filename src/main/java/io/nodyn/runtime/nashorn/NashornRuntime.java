@@ -191,7 +191,7 @@ public class NashornRuntime extends Nodyn {
         getEventLoop().setProcess(result);
 
         try {
-
+            LOGGER.debug("NashornRuntime.initializeWithProcess() begin");
             engine.eval("global = this;", global);
             engine.eval("load(\"nashorn:mozilla_compat.js\");", global);
 
@@ -212,6 +212,7 @@ public class NashornRuntime extends Nodyn {
         } catch (ScriptException ex) {
             LOGGER.error("Cannot initialize", ex);
         }
+        LOGGER.debug("NashornRuntime.initializeWithProcess() end");
         return result;
 
     }
@@ -223,6 +224,7 @@ public class NashornRuntime extends Nodyn {
      * and http://davidbuccola.blogspot.de/2015/02/debugging-nashorn-javascript-with.html
      */
     private ScriptObjectMirror engineLoadScript(String pathOrUrl) throws ScriptException {
+        LOGGER.trace("NashornRuntime.engineLoadScript() begin: " + pathOrUrl);
         String resource = pathOrUrl;
         if (!pathOrUrl.contains(":")) {
             // likely a classpath relative path, turn into proper URL
@@ -230,6 +232,7 @@ public class NashornRuntime extends Nodyn {
             resource = result.toString();
         }
         ScriptObjectMirror eval = (ScriptObjectMirror) engine.eval("load('" + resource + "')", global);
+        LOGGER.trace("NashornRuntime.engineLoadScript() end: " + pathOrUrl);
         return eval;
     }
 
