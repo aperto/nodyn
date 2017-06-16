@@ -97,6 +97,18 @@
   </properties>
 
   <repositories>
+    <!-- for com.aperto.jnr:jnr-posix fork -->
+    <repository>
+      <id>aperto.nexus.snapshots</id>
+      <name>Aperto 3rd party snapshots</name>
+      <url>https://maven.aperto.de/nexus/content/repositories/thirdparty.snapshots/</url>
+    </repository>
+    <repository>
+      <id>aperto.nexus.releases</id>
+      <name>Aperto 3rd party</name>
+      <url>https://maven.aperto.de/nexus/content/repositories/thirdparty/</url>
+    </repository>
+
     <repository>
       <id>projectodd-upstream</id>
       <name>project:odd Upstream Builds</name>
