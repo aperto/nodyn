@@ -158,9 +158,6 @@ public class EventLoop implements RefCounted {
         --this.counter;
         this.handles.remove(handle);
         if (this.counter == 0) {
-            System.err.println("### ~~~~~~~~~~~~~~~~~~~ ###");
-            System.err.println("### ref count reached 0 ###");
-            System.err.println("### ~~~~~~~~~~~~~~~~~~~ ###");
             doShutdown();
         }
     }
